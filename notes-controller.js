@@ -22,6 +22,10 @@ async function getNotes() {
   return Array.isArray(JSON.parse(notes)) ? JSON.parse(notes) : [];
 }
 
+async function saveNotes(notes) {
+  await fs.writeFile(notesPath, JSON.stringify(notes));
+}
+
 async function printNotes() {
   const notes = await getNotes();
   console.log(chalk.bgBlue("Here is the list of Notes"));
@@ -32,14 +36,27 @@ async function printNotes() {
 
 async function removeNote(id) {
   const notes = await getNotes();
-  const note = notes.filter((note) => note.id !== id.toString());
-  await fs.writeFile(notesPath, JSON.stringify(note));
+
+  const filtered = notes.filter((note) => note.id !== id);
+
+  await saveNotes(filtered);
+  console.log(chalk.red(`Note with id="${id}" has been removed.`));
+}
+
+async function editNote(id, newTitle) {
+  let notes = await getNotes();
+  newTitle === null
+    ? notes
+    : notes.filter((note) => note.id === id).map((n) => (n.title = newTitle));
+
+  await saveNotes(notes);
+  console.log(chalk.red(`Note with id="${id}" has been edited.`));
 }
 
 module.exports = {
   addNote,
-  printNotes,
   removeNote,
+  getNotes,
+  printNotes,
+  editNote,
 };
-
-// npm i chalk@4.1.2 - для красоты терминала
